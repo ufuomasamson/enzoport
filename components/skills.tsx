@@ -4,20 +4,22 @@ import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
-// Skill data with proficiency percentages
+// Updated skill data with proficiency percentages
 const skills = [
   { name: "WordPress", proficiency: 95 },
-  { name: "V0dev", proficiency: 90 },
-  { name: "boltnew", proficiency: 85 },
   { name: "Tailwind CSS", proficiency: 80 },
   { name: "ReactJs", proficiency: 75 },
-  { name: "Supabase", proficiency: 70 },
   { name: "nodeJs", proficiency: 85 },
   { name: "php", proficiency: 80 },
   { name: "expressJs", proficiency: 78 },
   { name: "Javascript", proficiency: 92 },
   { name: "SEO", proficiency: 75 },
   { name: "Elementor", proficiency: 90 },
+  { name: "NestJS", proficiency: 82 },
+  { name: "Bootstrap", proficiency: 88 },
+  { name: "React Router", proficiency: 85 },
+  { name: "Next.js", proficiency: 80 },
+  { name: "AngularJS", proficiency: 75 },
 ]
 
 export default function Skills() {
