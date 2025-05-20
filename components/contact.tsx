@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -10,16 +10,24 @@ import { Button } from "@/components/ui/button"
 import { Mail, Send, CheckCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { motion } from "framer-motion"
+import emailjs from "@emailjs/browser"
 
 export default function Contact() {
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
+    from_name: "",
+    reply_to: "",
     message: "",
   })
+
+  // Initialize EmailJS
+  useEffect(() => {
+    // Initialize EmailJS with your public key
+    emailjs.init("MMJqW4MYI-y9fS4_n")
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -30,19 +38,42 @@ export default function Contact() {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Simulate form submission
-    setTimeout(() => {
-      toast({
-        title: "Message sent!",
-        description: "Thanks for reaching out. I'll get back to you soon.",
-      })
-      setFormData({ name: "", email: "", message: "" })
-      setIsSubmitting(false)
-      setIsSubmitted(true)
+    try {
+      if (!formRef.current) return
 
-      // Reset submitted state after 3 seconds
-      setTimeout(() => setIsSubmitted(false), 3000)
-    }, 1500)
+      // Send email using EmailJS
+      const result = await emailjs.sendForm(
+        "enzo_port", // Your EmailJS service ID
+        "template_w5uz7vv", // Your EmailJS template ID
+        formRef.current,
+        "MMJqW4MYI-y9fS4_n", // Your EmailJS public key
+      )
+
+      if (result.text === "OK") {
+        toast({
+          title: "Message sent!",
+          description: "Thanks for reaching out. I'll get back to you soon.",
+        })
+
+        // Reset form
+        setFormData({ from_name: "", reply_to: "", message: "" })
+        setIsSubmitted(true)
+
+        // Reset submitted state after 3 seconds
+        setTimeout(() => setIsSubmitted(false), 3000)
+      } else {
+        throw new Error("Failed to send email")
+      }
+    } catch (error) {
+      console.error("Error sending message:", error)
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again later.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   // Animation variants
@@ -157,7 +188,7 @@ export default function Contact() {
                 </p>
               </motion.div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
                 <motion.div
                   className="space-y-2"
                   initial={{ opacity: 0, y: 20 }}
@@ -165,14 +196,14 @@ export default function Contact() {
                   transition={{ duration: 0.5, delay: 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <label htmlFor="name" className="text-sm font-medium text-[#0F172A] dark:text-white">
+                  <label htmlFor="from_name" className="text-sm font-medium text-[#0F172A] dark:text-white">
                     Name
                   </label>
                   <Input
-                    id="name"
-                    name="name"
+                    id="from_name"
+                    name="from_name" // This matches the EmailJS template parameter
                     placeholder="Your name"
-                    value={formData.name}
+                    value={formData.from_name}
                     onChange={handleChange}
                     required
                     className="border-border focus:border-[#3B3B98] dark:focus:border-[#F4B942]"
@@ -186,15 +217,15 @@ export default function Contact() {
                   transition={{ duration: 0.5, delay: 0.2 }}
                   viewport={{ once: true }}
                 >
-                  <label htmlFor="email" className="text-sm font-medium text-[#0F172A] dark:text-white">
+                  <label htmlFor="reply_to" className="text-sm font-medium text-[#0F172A] dark:text-white">
                     Email
                   </label>
                   <Input
-                    id="email"
-                    name="email"
+                    id="reply_to"
+                    name="reply_to" // This matches the EmailJS template parameter
                     type="email"
                     placeholder="Your email"
-                    value={formData.email}
+                    value={formData.reply_to}
                     onChange={handleChange}
                     required
                     className="border-border focus:border-[#3B3B98] dark:focus:border-[#F4B942]"
@@ -213,7 +244,7 @@ export default function Contact() {
                   </label>
                   <Textarea
                     id="message"
-                    name="message"
+                    name="message" // This matches the EmailJS template parameter
                     placeholder="Your message"
                     value={formData.message}
                     onChange={handleChange}
