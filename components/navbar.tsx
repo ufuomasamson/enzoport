@@ -6,6 +6,7 @@ import { useState, useEffect } from "react"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
+import { motion, AnimatePresence } from "framer-motion"
 
 const navLinks = [
   { name: "Home", href: "#home" },
@@ -60,15 +61,66 @@ export default function Navbar() {
     }
   }
 
+  // Animation variants
+  const navbarVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: [0.4, 0, 0.2, 1],
+      },
+    },
+  }
+
+  const linkVariants = {
+    hover: {
+      scale: 1.05,
+      transition: {
+        duration: 0.2,
+        ease: "easeOut",
+      },
+    },
+  }
+
+  const mobileMenuVariants = {
+    hidden: { opacity: 0, height: 0 },
+    visible: {
+      opacity: 1,
+      height: "auto",
+      transition: {
+        duration: 0.3,
+        ease: [0.4, 0, 0.2, 1],
+      },
+    },
+    exit: {
+      opacity: 0,
+      height: 0,
+      transition: {
+        duration: 0.3,
+        ease: [0.4, 0, 0.2, 1],
+      },
+    },
+  }
+
   return (
-    <header
+    <motion.header
       className={`sticky top-0 z-50 w-full transition-all duration-400 ease-in-out ${
         scrolled ? "bg-white/90 dark:bg-[#0F172A]/90 backdrop-blur-sm shadow-sm" : "bg-transparent"
       }`}
+      initial="hidden"
+      animate="visible"
+      variants={navbarVariants}
     >
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          <div className="flex-shrink-0">
+          <motion.div
+            className="flex-shrink-0"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             <a
               href="#home"
               onClick={(e) => scrollToSection(e, "home")}
@@ -76,11 +128,11 @@ export default function Navbar() {
             >
               Samson U. Enzo
             </a>
-          </div>
+          </motion.div>
 
           <div className="hidden md:flex md:items-center md:space-x-6">
-            {navLinks.map((link) => (
-              <a
+            {navLinks.map((link, index) => (
+              <motion.a
                 key={link.name}
                 href={link.href}
                 onClick={(e) => scrollToSection(e, link.href.substring(1))}
@@ -89,44 +141,81 @@ export default function Navbar() {
                     ? "text-[#3B3B98] dark:text-[#F4B942]"
                     : "text-[#0F172A] dark:text-white hover:text-[#3B3B98] dark:hover:text-[#F4B942]"
                 }`}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
+                variants={linkVariants}
+                whileHover="hover"
               >
                 {link.name}
-              </a>
+              </motion.a>
             ))}
-            <ModeToggle />
+            <motion.div
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+            >
+              <ModeToggle />
+            </motion.div>
           </div>
 
           <div className="flex md:hidden">
-            <ModeToggle />
-            <Button variant="ghost" size="icon" className="ml-2" onClick={() => setIsOpen(!isOpen)}>
-              <span className="sr-only">Toggle menu</span>
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+            <motion.div
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <ModeToggle />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <Button variant="ghost" size="icon" className="ml-2" onClick={() => setIsOpen(!isOpen)}>
+                <span className="sr-only">Toggle menu</span>
+                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </Button>
+            </motion.div>
           </div>
         </div>
       </div>
 
       {/* Mobile menu */}
-      {isOpen && (
-        <div className="md:hidden">
-          <div className="space-y-1 px-4 pb-3 pt-2">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={(e) => scrollToSection(e, link.href.substring(1))}
-                className={`block py-2 text-base font-medium ${
-                  activeSection === link.href.substring(1)
-                    ? "text-[#3B3B98] dark:text-[#F4B942]"
-                    : "text-[#0F172A] dark:text-white"
-                }`}
-              >
-                {link.name}
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
-    </header>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className="md:hidden"
+            variants={mobileMenuVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <div className="space-y-1 px-4 pb-3 pt-2">
+              {navLinks.map((link, index) => (
+                <motion.a
+                  key={link.name}
+                  href={link.href}
+                  onClick={(e) => scrollToSection(e, link.href.substring(1))}
+                  className={`block py-2 text-base font-medium ${
+                    activeSection === link.href.substring(1)
+                      ? "text-[#3B3B98] dark:text-[#F4B942]"
+                      : "text-[#0F172A] dark:text-white"
+                  }`}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  whileHover={{ x: 5 }}
+                >
+                  {link.name}
+                </motion.a>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.header>
   )
 }

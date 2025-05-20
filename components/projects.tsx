@@ -66,32 +66,78 @@ const projectsData = [
 export default function Projects() {
   const [hoveredId, setHoveredId] = useState<number | null>(null)
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  }
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: [0.4, 0, 0.2, 1],
+      },
+    },
+    hover: {
+      y: -10,
+      boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+      transition: {
+        duration: 0.3,
+        ease: "easeOut",
+      },
+    },
+  }
+
+  const imageVariants = {
+    hover: {
+      scale: 1.05,
+      transition: {
+        duration: 0.4,
+        ease: "easeOut",
+      },
+    },
+  }
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <motion.div
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.1 }}
+    >
       {projectsData.map((project) => (
         <motion.div
           key={project.id}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: project.id * 0.1 }}
-          viewport={{ once: true }}
+          variants={cardVariants}
+          whileHover="hover"
           onMouseEnter={() => setHoveredId(project.id)}
           onMouseLeave={() => setHoveredId(null)}
-          className="transition-all duration-400 ease-in-out"
-          style={{
-            transform: hoveredId === project.id ? "translateY(-6px)" : "translateY(0)",
-          }}
+          className="h-full"
         >
-          <Card className="overflow-hidden h-full transition-all duration-400 ease-in-out border border-border hover:shadow-lg">
+          <Card className="overflow-hidden h-full transition-all duration-400 ease-in-out border border-border">
             <div className="relative h-56 w-full overflow-hidden">
-              <Image
-                src={project.image || "/placeholder.svg"}
-                alt={project.title}
-                fill
-                className="object-cover w-full transition-transform duration-400 ease-in-out hover:scale-105"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                priority={project.id <= 3}
-              />
+              <motion.div className="h-full w-full" variants={imageVariants}>
+                <Image
+                  src={project.image || "/placeholder.svg"}
+                  alt={project.title}
+                  fill
+                  className="object-cover w-full"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  priority={project.id <= 3}
+                />
+              </motion.div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
             <CardContent className="p-6">
               <h3 className="text-xl font-bold mb-2 text-[#0F172A] dark:text-white">{project.title}</h3>
@@ -109,21 +155,23 @@ export default function Projects() {
               </div>
             </CardContent>
             <CardFooter className="px-6 pb-6 pt-0">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-1 border-[#3B3B98] text-[#3B3B98] hover:bg-[#3B3B98]/10 dark:border-[#F4B942] dark:text-[#F4B942] dark:hover:bg-[#F4B942]/10"
-                asChild
-              >
-                <a href={project.demoUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4" />
-                  <span>Live Demo</span>
-                </a>
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1 border-[#3B3B98] text-[#3B3B98] hover:bg-[#3B3B98]/10 dark:border-[#F4B942] dark:text-[#F4B942] dark:hover:bg-[#F4B942]/10"
+                  asChild
+                >
+                  <a href={project.demoUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4" />
+                    <span>Live Demo</span>
+                  </a>
+                </Button>
+              </motion.div>
             </CardFooter>
           </Card>
         </motion.div>
       ))}
-    </div>
+    </motion.div>
   )
 }

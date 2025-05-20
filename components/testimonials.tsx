@@ -68,41 +68,131 @@ export default function Testimonials() {
     return () => clearInterval(interval)
   }, [current, autoplay])
 
+  // Animation variants
+  const cardVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 300 : -300,
+      opacity: 0,
+      scale: 0.9,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: [0.4, 0, 0.2, 1],
+      },
+    },
+    exit: (direction: number) => ({
+      x: direction > 0 ? -300 : 300,
+      opacity: 0,
+      scale: 0.9,
+      transition: {
+        duration: 0.5,
+        ease: [0.4, 0, 0.2, 1],
+      },
+    }),
+  }
+
+  const quoteIconVariants = {
+    hidden: { opacity: 0, scale: 0 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        delay: 0.3,
+        duration: 0.5,
+        type: "spring",
+        stiffness: 200,
+      },
+    },
+  }
+
+  const buttonVariants = {
+    hover: { scale: 1.1, transition: { duration: 0.2 } },
+    tap: { scale: 0.95, transition: { duration: 0.1 } },
+  }
+
+  const [direction, setDirection] = useState(0)
+
+  const handleNext = () => {
+    setDirection(1)
+    next()
+    setAutoplay(false)
+  }
+
+  const handlePrev = () => {
+    setDirection(-1)
+    prev()
+    setAutoplay(false)
+  }
+
   return (
     <div className="relative">
       <div className="flex justify-center mb-8">
         <div className="relative w-full max-w-3xl">
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={current}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
+              custom={direction}
+              variants={cardVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
               className="w-full"
             >
               <Card className="border border-border">
                 <CardContent className="p-8">
-                  <Quote className="h-10 w-10 text-[#3B3B98]/20 dark:text-[#F4B942]/20 mb-4" />
-                  <p className="text-lg italic text-[#0F172A]/80 dark:text-white/80 mb-6">
+                  <motion.div variants={quoteIconVariants} initial="hidden" animate="visible">
+                    <Quote className="h-10 w-10 text-[#3B3B98]/20 dark:text-[#F4B942]/20 mb-4" />
+                  </motion.div>
+                  <motion.p
+                    className="text-lg italic text-[#0F172A]/80 dark:text-white/80 mb-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                  >
                     "{testimonials[current].quote}"
-                  </p>
-                  <div className="flex items-center">
-                    <div className="relative h-16 w-16 rounded-full overflow-hidden mr-4">
+                  </motion.p>
+                  <motion.div
+                    className="flex items-center"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                  >
+                    <motion.div
+                      className="relative h-16 w-16 rounded-full overflow-hidden mr-4"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.5, duration: 0.5, type: "spring", stiffness: 200 }}
+                    >
                       <Image
                         src={testimonials[current].image || "/placeholder.svg"}
                         alt={testimonials[current].name}
                         fill
                         className="object-cover"
                       />
-                    </div>
+                    </motion.div>
                     <div>
-                      <h4 className="font-bold text-[#0F172A] dark:text-white">{testimonials[current].name}</h4>
-                      <p className="text-[#0F172A]/70 dark:text-white/70">
+                      <motion.h4
+                        className="font-bold text-[#0F172A] dark:text-white"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.6, duration: 0.5 }}
+                      >
+                        {testimonials[current].name}
+                      </motion.h4>
+                      <motion.p
+                        className="text-[#0F172A]/70 dark:text-white/70"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.7, duration: 0.5 }}
+                      >
                         {testimonials[current].role}, {testimonials[current].company}
-                      </p>
+                      </motion.p>
                     </div>
-                  </div>
+                  </motion.div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -110,16 +200,19 @@ export default function Testimonials() {
 
           <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
             {testimonials.map((_, index) => (
-              <button
+              <motion.button
                 key={index}
                 className={`w-2 h-2 rounded-full transition-all duration-400 ease-in-out ${
                   index === current ? "bg-[#3B3B98] dark:bg-[#F4B942] w-4" : "bg-[#3B3B98]/30 dark:bg-[#F4B942]/30"
                 }`}
                 onClick={() => {
+                  setDirection(index > current ? 1 : -1)
                   setCurrent(index)
                   setAutoplay(false)
                 }}
                 aria-label={`Go to testimonial ${index + 1}`}
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.9 }}
               />
             ))}
           </div>
@@ -127,30 +220,28 @@ export default function Testimonials() {
       </div>
 
       <div className="flex justify-center space-x-4">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => {
-            prev()
-            setAutoplay(false)
-          }}
-          className="rounded-full border-[#3B3B98] text-[#3B3B98] hover:bg-[#3B3B98]/10 dark:border-[#F4B942] dark:text-[#F4B942] dark:hover:bg-[#F4B942]/10"
-          aria-label="Previous testimonial"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => {
-            next()
-            setAutoplay(false)
-          }}
-          className="rounded-full border-[#3B3B98] text-[#3B3B98] hover:bg-[#3B3B98]/10 dark:border-[#F4B942] dark:text-[#F4B942] dark:hover:bg-[#F4B942]/10"
-          aria-label="Next testimonial"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+        <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handlePrev}
+            className="rounded-full border-[#3B3B98] text-[#3B3B98] hover:bg-[#3B3B98]/10 dark:border-[#F4B942] dark:text-[#F4B942] dark:hover:bg-[#F4B942]/10"
+            aria-label="Previous testimonial"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        </motion.div>
+        <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleNext}
+            className="rounded-full border-[#3B3B98] text-[#3B3B98] hover:bg-[#3B3B98]/10 dark:border-[#F4B942] dark:text-[#F4B942] dark:hover:bg-[#F4B942]/10"
+            aria-label="Next testimonial"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </motion.div>
       </div>
     </div>
   )

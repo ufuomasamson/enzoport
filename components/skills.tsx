@@ -21,20 +21,52 @@ const skills = [
 ]
 
 export default function Skills() {
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+        delayChildren: 0.2,
+      },
+    },
+  }
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: [0.4, 0, 0.2, 1],
+      },
+    },
+    hover: {
+      y: -5,
+      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+      transition: {
+        duration: 0.2,
+        ease: "easeOut",
+      },
+    },
+  }
+
   return (
     <div className="space-y-8">
       {/* Mobile Carousel - Only visible on mobile */}
       <div className="md:hidden">
         <ScrollArea className="w-full whitespace-nowrap pb-6">
-          <div className="flex w-max space-x-4 p-1">
+          <motion.div
+            className="flex w-max space-x-4 p-1"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+          >
             {skills.map((skill, index) => (
-              <motion.div
-                key={skill.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
-                viewport={{ once: true }}
-              >
+              <motion.div key={skill.name} variants={cardVariants} whileHover="hover">
                 <Card className="min-w-[200px] overflow-hidden border border-border">
                   <CardContent className="p-6">
                     <h3 className="font-medium text-lg mb-2 text-[#0F172A] dark:text-white">{skill.name}</h3>
@@ -43,7 +75,7 @@ export default function Skills() {
                         className="h-full bg-[#3B3B98] dark:bg-[#F4B942]"
                         initial={{ width: 0 }}
                         whileInView={{ width: `${skill.proficiency}%` }}
-                        transition={{ duration: 1, delay: 0.2 }}
+                        transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
                         viewport={{ once: true }}
                       />
                     </div>
@@ -52,22 +84,22 @@ export default function Skills() {
                 </Card>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
       </div>
 
       {/* Grid Layout - For all screen sizes, but primary display for tablet and desktop */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <motion.div
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.1 }}
+      >
         {skills.map((skill, index) => (
-          <motion.div
-            key={`grid-${skill.name}`}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.05 }}
-            viewport={{ once: true }}
-          >
-            <Card className="overflow-hidden border border-border">
+          <motion.div key={`grid-${skill.name}`} variants={cardVariants} whileHover="hover">
+            <Card className="overflow-hidden border border-border h-full">
               <CardContent className="p-4">
                 <h3 className="font-medium mb-2 text-[#0F172A] dark:text-white">{skill.name}</h3>
                 <div className="w-full h-2 bg-[#F7F8FA] dark:bg-[#0F172A]/50 rounded-full overflow-hidden">
@@ -75,16 +107,24 @@ export default function Skills() {
                     className="h-full bg-[#3B3B98] dark:bg-[#F4B942]"
                     initial={{ width: 0 }}
                     whileInView={{ width: `${skill.proficiency}%` }}
-                    transition={{ duration: 1, delay: 0.2 }}
+                    transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
                     viewport={{ once: true }}
                   />
                 </div>
-                <p className="text-right mt-1 text-sm text-[#0F172A]/70 dark:text-white/70">{skill.proficiency}%</p>
+                <motion.p
+                  className="text-right mt-1 text-sm text-[#0F172A]/70 dark:text-white/70"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  transition={{ delay: 1.3 }}
+                  viewport={{ once: true }}
+                >
+                  {skill.proficiency}%
+                </motion.p>
               </CardContent>
             </Card>
           </motion.div>
         ))}
-      </div>
+      </motion.div>
     </div>
   )
 }
